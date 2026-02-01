@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: pricewatch-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=pricewatch
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - pricewatch-network
+
+  # Backend API Server
+  backend:
+    build: ./backend
+    container_name: pricewatch-backend
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - MONGODB_URI=mongodb://mongodb:27017/pricewatch
+      - JWT_SECRET=your_super_secret_jwt_key_change_this
+      - ML_SERVICE_URL=http://ml-service:5000
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongodb
+      - ml-service
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - pricewatch-network
+
+  # ML Service (Flask/Python)
+  ml-service:
+    build: ./ml-service
+    container_name: pricewatch-ml
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - MODEL_PATH=/app/models/saved_models
+    volumes:
+      - ./ml-service/models:/app/models
+    networks:
+      - pricewatch-network
+
+  # Frontend (React)
+  frontend:
+    build: ./frontend
+    container_name: pricewatch-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5001
+      - REACT_APP_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+    depends_on:
+      - backend
+    networks:
+      - pricewatch-network
+
+networks:
+  pricewatch-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
