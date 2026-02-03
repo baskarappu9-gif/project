@@ -10,7 +10,7 @@ const axios = require('axios');
 /**
  * @desc    Get all properties with filters
  * @route   GET /api/properties
- * @access  Public
+ * @access  Public (Auth optional for history)
  */
 const getProperties = async (req, res) => {
     try {
@@ -53,6 +53,33 @@ const getProperties = async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
+
+        // Save search history if query params exist and user is logged in
+        if (req.user && (city || state || propertyType || bhkType)) {
+            try {
+                // Determine search location string
+                let searchLocation = 'India';
+                if (city && state) searchLocation = `${city}, ${state}`;
+                else if (city) searchLocation = city;
+                else if (state) searchLocation = state;
+
+                // Create history entry asynchronously (don't await to block response)
+                const SearchHistory = require('../models/SearchHistory');
+                SearchHistory.create({
+                    userId: req.user._id,
+                    query: searchLocation,
+                    filters: {
+                        type,
+                        minPrice,
+                        maxPrice,
+                        bhkType,
+                        propertyType
+                    }
+                }).catch(err => console.error('Error saving search history:', err.message));
+            } catch (historyError) {
+                // Ignore history errors to not fail the main request
+            }
+        }
 
         res.json({
             success: true,

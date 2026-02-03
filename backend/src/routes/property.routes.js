@@ -13,10 +13,10 @@ const {
     saveProperty,
     unsaveProperty,
 } = require('../controllers/propertyController');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, optionalAuth } = require('../middleware/auth.middleware');
 
 // Public routes
-router.get('/', getProperties);
+router.get('/', optionalAuth, getProperties);
 router.get('/:id', getPropertyById);
 
 // Protected routes
