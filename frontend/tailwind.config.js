@@ -2,7 +2,6 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
-    "./public/index.html"
   ],
   theme: {
     extend: {
@@ -14,49 +13,33 @@ module.exports = {
           300: '#a5b4fc',
           400: '#818cf8',
           500: '#6366f1',
-          600: '#4f46e5',
+          600: '#4f46e5', // Royal Indigo - Brand Color
           700: '#4338ca',
           800: '#3730a3',
           900: '#312e81',
         },
-        success: {
-          500: '#10b981',
+        secondary: {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981', // Emerald Teal - Success/Growth
           600: '#059669',
+          700: '#047857',
         },
-        warning: {
-          500: '#f59e0b',
-          600: '#d97706',
-        },
-        danger: {
-          500: '#ef4444',
-          600: '#dc2626',
+        accent: {
+          500: '#f43f5e', // Vibrant Coral - CTA
+          600: '#e11d48',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif'],
       },
       boxShadow: {
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.3s ease-in-out',
-        'slide-up': 'slideUp 0.4s ease-out',
-        'scale': 'scale 0.2s ease-in-out',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        scale: {
-          '0%': { transform: 'scale(0.95)' },
-          '100%': { transform: 'scale(1)' },
-        },
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        'neumorph': '20px 20px 60px #d1d9e6, -20px -20px 60px #ffffff',
       },
     },
   },

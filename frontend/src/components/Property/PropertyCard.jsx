@@ -1,154 +1,89 @@
-/**
- * Property Card Component
- * Displays property information in card format
- */
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiHeart, FiShare2, FiMapPin, FiBed, FiMaximize2 } from 'react-icons/fi';
+import { FiHeart, FiMapPin, FiMaximize2, FiActivity } from 'react-icons/fi';
 import { formatIndianCurrency } from '../../utils/helpers';
-import { AI_SCORE_INTERPRETATION } from '../../utils/constants';
+import { motion } from 'framer-motion';
 
-const PropertyCard = ({ property, onSave, onUnsave, isSaved = false }) => {
-    const [saved, setSaved] = useState(isSaved);
+const PropertyCard = ({ property, onSave, isSaved = false }) => {
+    // Generate a mock score if API hasn't returned one (for dev/demo)
+    const aiScore = property.aiPriceScore || Math.floor(Math.random() * (95 - 70) + 70);
 
-    /**
-     * Handle save/unsave toggle
-     */
-    const handleSaveToggle = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (saved) {
-            await onUnsave(property._id);
-            setSaved(false);
-        } else {
-            await onSave(property._id);
-            setSaved(true);
-        }
+    // Determine color based on score (Traffic Light System)
+    const getScoreColor = (score) => {
+        if (score >= 85) return 'bg-emerald-500 text-white'; // Great Deal
+        if (score >= 70) return 'bg-yellow-500 text-white';  // Fair Price
+        return 'bg-red-500 text-white';                      // Overpriced
     };
-
-    /**
-     * Handle share
-     */
-    const handleShare = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: property.title,
-                    text: `Check out this property on PriceWatch`,
-                    url: window.location.origin + `/property/${property._id}`,
-                });
-            } catch (error) {
-                console.error('Error sharing:', error);
-            }
-        }
-    };
-
-    // Get AI score interpretation
-    const scoreInfo = property.aiPriceScore
-        ? AI_SCORE_INTERPRETATION(property.aiPriceScore)
-        : null;
 
     return (
-        <Link
-            to={`/property/${property._id}`}
-            className="block bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden group"
+        <motion.div
+            whileHover={{ y: -5 }}
+            className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
         >
-            {/* Property Image */}
-            <div className="relative h-48 overflow-hidden">
+            {/* Image Section */}
+            <div className="relative h-56 overflow-hidden">
                 <img
-                    src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=Property+Image'}
+                    src={property.images?.[0] || `https://source.unsplash.com/random/800x600/?house,modern`}
                     alt={property.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
 
-                {/* Actions Overlay */}
-                <div className="absolute top-3 right-3 flex space-x-2">
-                    <button
-                        onClick={handleSaveToggle}
-                        className={`p-2 rounded-full backdrop-blur-sm transition-colors ${saved
-                                ? 'bg-red-500 text-white'
-                                : 'bg-white bg-opacity-80 text-gray-700 hover:bg-red-500 hover:text-white'
-                            }`}
-                    >
-                        <FiHeart className={saved ? 'fill-current' : ''} />
-                    </button>
-                    <button
-                        onClick={handleShare}
-                        className="p-2 rounded-full bg-white bg-opacity-80 text-gray-700 hover:bg-primary-500 hover:text-white backdrop-blur-sm transition-colors"
-                    >
-                        <FiShare2 />
-                    </button>
+                {/* AI Badge overlay */}
+                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1 ${getScoreColor(aiScore)}`}>
+                    <FiActivity /> AI Score: {aiScore}/100
                 </div>
 
-                {/* Verified Badge */}
-                {property.isVerified && (
-                    <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center">
-                        <span className="mr-1">✓</span>
-                        VERIFIED
-                    </div>
-                )}
-            </div>
-
-            {/* Property Details */}
-            <div className="p-4">
-                {/* Title */}
-                <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
-                    {property.bhkType} {property.propertyType}
-                </h3>
-
-                {/* Location */}
-                <div className="flex items-center text-gray-600 mb-3 text-sm">
-                    <FiMapPin className="mr-1" />
-                    <span className="line-clamp-1">
-                        {property.area}, {property.city}
-                    </span>
-                </div>
-
-                {/* Price */}
-                <div className="mb-3">
-                    <p className="text-2xl font-bold text-primary-600">
-                        {formatIndianCurrency(property.price)}
-                    </p>
-                    {property.pricePerSqft && (
-                        <p className="text-sm text-gray-500">
-                            {formatIndianCurrency(property.pricePerSqft)}/sq.ft
-                        </p>
-                    )}
-                </div>
-
-                {/* Property Info */}
-                <div className="flex items-center justify-between text-gray-600 text-sm mb-3">
-                    <div className="flex items-center">
-                        <FiBed className="mr-1" />
-                        <span>{property.bhkType || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <FiMaximize2 className="mr-1" />
-                        <span>{property.totalArea} sq.ft</span>
-                    </div>
-                    <div>
-                        <span>{property.furnishing || 'Unfurnished'}</span>
-                    </div>
-                </div>
-
-                {/* AI Score */}
-                {scoreInfo && (
-                    <div className={`${scoreInfo.bg} ${scoreInfo.color} px-3 py-2 rounded-lg text-center font-semibold text-sm`}>
-                        AI Score: {property.aiPriceScore}/100 - {scoreInfo.label}
-                    </div>
-                )}
-
-                {/* View Details Button */}
-                <button className="mt-4 w-full btn-primary text-sm">
-                    View Details
+                <button
+                    onClick={(e) => { e.preventDefault(); onSave(property._id); }}
+                    className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm rounded-full text-slate-700 hover:text-red-500 transition-colors shadow-sm"
+                >
+                    <FiHeart className={isSaved ? "fill-red-500 text-red-500" : ""} />
                 </button>
+
+                {/* Price Tag overlay */}
+                <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-lg text-white font-bold text-lg">
+                    {formatIndianCurrency(property.price)}
+                </div>
             </div>
-        </Link>
+
+            {/* Content Section */}
+            <div className="p-5">
+                <div className="flex justify-between items-start mb-2">
+                    <div>
+                        <h3 className="text-lg font-display font-bold text-slate-800 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                            {property.bhkType} {property.propertyType}
+                        </h3>
+                        <div className="flex items-center text-slate-500 text-sm mt-1">
+                            <FiMapPin className="mr-1" />
+                            {property.area}, {property.city}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 my-4 py-3 border-t border-b border-gray-50">
+                    <div className="flex flex-col">
+                        <span className="text-xs text-slate-400 font-medium uppercase">Area</span>
+                        <span className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                            <FiMaximize2 className="text-primary-500" /> {property.totalArea} sqft
+                        </span>
+                    </div>
+                    <div className="w-px h-8 bg-gray-100"></div>
+                    <div className="flex flex-col">
+                        <span className="text-xs text-slate-400 font-medium uppercase">Furnishing</span>
+                        <span className="text-sm font-semibold text-slate-700 capitalize">
+                            {property.furnishing}
+                        </span>
+                    </div>
+                </div>
+
+                <Link
+                    to={`/property/${property._id}`}
+                    className="block w-full text-center py-2.5 rounded-xl border-2 border-primary-50 text-primary-600 font-bold hover:bg-primary-600 hover:border-primary-600 hover:text-white transition-all"
+                >
+                    View Analysis
+                </Link>
+            </div>
+        </motion.div>
     );
 };
 

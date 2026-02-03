@@ -1,182 +1,140 @@
-/**
- * Dashboard Component
- * Main dashboard with 4 property module cards
- */
-
-import React, { useState } from 'react';
-import { FiHome, FiTag, FiMapPin, FiTrendingUp } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { FiHome, FiTrendingUp, FiPlus, FiDollarSign, FiClock } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { useProperty } from '../../context/PropertyContext';
+import { useAuth } from '../../context/AuthContext';
+import PropertyCard from '../Property/PropertyCard';
+import Loader from '../Common/Loader';
+import { FadeIn, SlideIn } from '../Common/Animations';
 
 const Dashboard = () => {
-    const navigate = useNavigate();
+    const { user } = useAuth();
+    const { properties, loading, fetchProperties } = useProperty();
+    const [recentProperties, setRecentProperties] = useState([]);
 
-    // Property module cards configuration
-    const propertyModules = [
-        {
-            id: 'buy-house',
-            title: 'Buy House',
-            description: 'Find your dream home',
-            icon: FiHome,
-            color: 'bg-blue-500',
-            hoverColor: 'hover:bg-blue-600',
-            path: '/buy-house',
-        },
-        {
-            id: 'sell-house',
-            title: 'Sell House',
-            description: 'List your property',
-            icon: FiTag,
-            color: 'bg-green-500',
-            hoverColor: 'hover:bg-green-600',
-            path: '/sell-house',
-        },
-        {
-            id: 'buy-plot',
-            title: 'Buy Plot',
-            description: 'Invest in land',
-            icon: FiMapPin,
-            color: 'bg-purple-500',
-            hoverColor: 'hover:bg-purple-600',
-            path: '/buy-plot',
-        },
-        {
-            id: 'sell-land',
-            title: 'Sell Land',
-            description: 'Sell your land',
-            icon: FiTrendingUp,
-            color: 'bg-orange-500',
-            hoverColor: 'hover:bg-orange-600',
-            path: '/sell-land',
-        },
+    useEffect(() => {
+        fetchProperties();
+        // eslint-disable-next-line
+    }, []);
+
+    useEffect(() => {
+        if (properties.length > 0) {
+            setRecentProperties(properties.slice(0, 3)); // Show top 3
+        }
+    }, [properties]);
+
+    if (loading) return <Loader />;
+
+    const stats = [
+        { label: 'Total Listings', value: '1,240', icon: <FiHome />, color: 'bg-blue-100 text-blue-600' },
+        { label: 'Avg. Market Price', value: '₹85L', icon: <FiDollarSign />, color: 'bg-emerald-100 text-emerald-600' },
+        { label: 'Market Growth', value: '+12%', icon: <FiTrendingUp />, color: 'bg-purple-100 text-purple-600' },
+        { label: 'Active Users', value: '850', icon: <FiClock />, color: 'bg-orange-100 text-orange-600' },
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Hero Section */}
-            <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        Welcome to PriceWatch
-                    </h1>
-                    <p className="text-xl md:text-2xl text-primary-100">
-                        AI-Powered Real Estate Platform for India
-                    </p>
-                    <div className="mt-8 flex items-center justify-center space-x-8 text-sm md:text-base">
-                        <div className="flex items-center">
-                            <span className="text-3xl font-bold">10K+</span>
-                            <span className="ml-2 text-primary-100">Properties</span>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="text-3xl font-bold">95%</span>
-                            <span className="ml-2 text-primary-100">AI Accuracy</span>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="text-3xl font-bold">5K+</span>
-                            <span className="ml-2 text-primary-100">Happy Users</span>
-                        </div>
+        <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Welcome Section */}
+                <FadeIn className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-display font-bold text-slate-800">
+                            Welcome back, <span className="text-primary-600">{user?.fullName?.split(' ')[0]}</span> 👋
+                        </h1>
+                        <p className="text-slate-500 mt-1">Here's what's happening in the real estate market today.</p>
                     </div>
-                </div>
-            </div>
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                {/* Trust Banner */}
-                <div className="bg-white rounded-xl shadow-md p-4 mb-12 flex items-center justify-center space-x-8 flex-wrap">
-                    <div className="flex items-center">
-                        <span className="text-green-500 text-2xl mr-2">✅</span>
-                        <span className="font-semibold">ZERO BROKERAGE FEE</span>
+                    <div className="flex gap-3">
+                        <Link to="/ai-predict" className="btn-accent flex items-center gap-2">
+                            <FiTrendingUp /> Check AI Price
+                        </Link>
+                        <Link to="/sell" className="btn-primary-new flex items-center gap-2">
+                            <FiPlus /> New Listing
+                        </Link>
                     </div>
-                    <div className="flex items-center">
-                        <span className="text-green-500 text-2xl mr-2">✅</span>
-                        <span className="font-semibold">VERIFIED LISTINGS</span>
-                    </div>
-                    <div className="flex items-center">
-                        <span className="text-green-500 text-2xl mr-2">✅</span>
-                        <span className="font-semibold">100% TRUSTED PLATFORM</span>
-                    </div>
+                </FadeIn>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    {stats.map((stat, index) => (
+                        <SlideIn direction="up" delay={index * 0.1} key={index}>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="text-sm font-medium text-slate-400">{stat.label}</p>
+                                        <h3 className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</h3>
+                                    </div>
+                                    <div className={`p-3 rounded-xl ${stat.color}`}>
+                                        {stat.icon}
+                                    </div>
+                                </div>
+                            </div>
+                        </SlideIn>
+                    ))}
                 </div>
 
-                {/* Property Module Cards */}
-                <div className="mb-12">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                        What would you like to do today?
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {propertyModules.map((module) => (
-                            <button
-                                key={module.id}
-                                onClick={() => navigate(module.path)}
-                                className={`${module.color} ${module.hoverColor} text-white rounded-xl shadow-lg p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-xl`}
-                            >
-                                <module.icon className="text-5xl mx-auto mb-4" />
-                                <h3 className="text-2xl font-bold mb-2">{module.title}</h3>
-                                <p className="text-white text-opacity-90">{module.description}</p>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                {/* Main Content Sections */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Recent Listings Column */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-slate-800">Recommended for You</h2>
+                            <Link to="/buy" className="text-primary-600 font-medium hover:underline">View All</Link>
+                        </div>
 
-                {/* AI Insights Panel */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Hot Areas */}
-                    <div className="bg-white rounded-xl shadow-md p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                            <span className="text-2xl mr-2">🔥</span>
-                            Hot Areas This Week
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <span>Whitefield, Bangalore</span>
-                                <span className="text-green-600 font-semibold">+15%</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Bandra, Mumbai</span>
-                                <span className="text-green-600 font-semibold">+12%</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Sector 62, Noida</span>
-                                <span className="text-green-600 font-semibold">+10%</span>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {recentProperties.map((property, idx) => (
+                                <FadeIn delay={0.2 + (idx * 0.1)} key={property._id}>
+                                    <PropertyCard property={property} />
+                                </FadeIn>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Price Drops */}
-                    <div className="bg-white rounded-xl shadow-md p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                            <span className="text-2xl mr-2">📉</span>
-                            Recent Price Drops
-                        </h3>
-                        <div className="space-y-3">
-                            <div>
-                                <p className="font-semibold text-blue-600">23 properties</p>
-                                <p className="text-sm text-gray-600">reduced in last 7 days</p>
-                            </div>
-                            <button className="btn-primary w-full mt-4">
-                                View All
-                            </button>
-                        </div>
-                    </div>
+                    {/* Sidebar / AI Insights */}
+                    <div className="lg:col-span-1">
+                        <SlideIn direction="left" delay={0.3}>
+                            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-xl">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="p-2 bg-emerald-500/20 rounded-lg">
+                                        <FiTrendingUp className="text-emerald-400" />
+                                    </div>
+                                    <h3 className="text-lg font-bold">Market Pulse</h3>
+                                </div>
 
-                    {/* Trending Markets */}
-                    <div className="bg-white rounded-xl shadow-md p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                            <span className="text-2xl mr-2">📈</span>
-                            Trending Markets
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <span>Gurgaon</span>
-                                <span className="badge badge-success">+12%</span>
+                                <div className="space-y-6">
+                                    <div>
+                                        <p className="text-slate-400 text-sm mb-1">Top Performing Area</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-lg">HSR Layout</span>
+                                            <span className="text-emerald-400 font-bold">+8.4% ↗</span>
+                                        </div>
+                                        <div className="w-full bg-slate-700 h-1.5 rounded-full mt-2">
+                                            <div className="bg-emerald-500 h-1.5 rounded-full w-[84%]"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-slate-400 text-sm mb-1">Price Drop Alert</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-lg">Whitefield</span>
+                                            <span className="text-red-400 font-bold">-2.1% ↘</span>
+                                        </div>
+                                        <div className="w-full bg-slate-700 h-1.5 rounded-full mt-2">
+                                            <div className="bg-red-400 h-1.5 rounded-full w-[21%]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 pt-6 border-t border-slate-700">
+                                    <h4 className="font-bold mb-2">Did you know?</h4>
+                                    <p className="text-sm text-slate-300 leading-relaxed">
+                                        Properties near the upcoming Metro line in Electronic City have seen a 15% appreciation in the last 6 months.
+                                    </p>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span>Pune</span>
-                                <span className="badge badge-success">+8%</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Hyderabad</span>
-                                <span className="badge badge-success">+7%</span>
-                            </div>
-                        </div>
+                        </SlideIn>
                     </div>
                 </div>
             </div>

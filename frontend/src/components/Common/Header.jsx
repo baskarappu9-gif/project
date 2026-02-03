@@ -1,204 +1,140 @@
-/**
- * Header Component
- * Top navigation bar with logo, search, and user menu
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiHome, FiUser, FiHeart, FiLogOut, FiSearch, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiUser, FiHeart, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Header = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [scrolled, setScrolled] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [showMobileMenu, setShowMobileMenu] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    /**
-     * Handle logout
-     */
+    // Handle scroll effect for glassmorphism
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const handleLogout = async () => {
         await logout();
         navigate('/login');
     };
 
-    /**
-     * Handle search
-     */
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-        }
-    };
-
     return (
-        <header className="bg-white shadow-md sticky top-0 z-50">
+        <header
+            className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-2' : 'bg-transparent py-4'
+                }`}
+        >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
+                <div className="flex justify-between items-center">
                     {/* Logo */}
-                    <Link to="/dashboard" className="flex items-center space-x-2">
-                        <div className="bg-primary-600 p-2 rounded-lg">
-                            <FiHome className="text-white text-2xl" />
+                    <Link to="/" className="flex items-center gap-2 group">
+                        <div className="bg-primary-600 p-2 rounded-xl shadow-lg group-hover:bg-primary-700 transition-colors">
+                            <FiHome className="text-white text-xl" />
                         </div>
-                        <span className="text-2xl font-bold text-primary-600">
-                            Price<span className="text-gray-800">Watch</span>
+                        <span className={`text-2xl font-display font-bold ${scrolled ? 'text-slate-800' : 'text-slate-800' // Keeping text dark for now as landing might be light
+                            }`}>
+                            Price<span className="text-primary-600">Watch</span>
                         </span>
                     </Link>
 
-                    {/* Search Bar - Desktop */}
-                    <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg mx-8">
-                        <div className="relative w-full">
-                            <input
-                                type="text"
-                                placeholder="Search for properties, locations..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            />
-                            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        </div>
-                    </form>
-
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-4">
-                        <Link
-                            to="/dashboard"
-                            className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                            <FiHome className="inline mr-2" />
-                            Home
-                        </Link>
-                        <Link
-                            to="/saved-properties"
-                            className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                            <FiHeart className="inline mr-2" />
-                            Saved
+                    <nav className="hidden md:flex items-center gap-8">
+                        <Link to="/buy" className="font-medium text-slate-600 hover:text-primary-600 transition-colors">Buy</Link>
+                        <Link to="/rent" className="font-medium text-slate-600 hover:text-primary-600 transition-colors">Rent</Link>
+                        <Link to="/sell" className="font-medium text-slate-600 hover:text-primary-600 transition-colors">Sell</Link>
+                        <Link to="/ai-predict" className="font-medium text-slate-600 hover:text-primary-600 transition-colors flex items-center gap-1">
+                            <span className="bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent font-bold">AI Insight</span>
                         </Link>
 
-                        {/* User Menu */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowUserMenu(!showUserMenu)}
-                                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                            >
-                                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                    {getInitials(user?.fullName || 'User')}
-                                </div>
-                                <span className="font-medium">{user?.fullName || 'User'}</span>
-                            </button>
-
-                            {/* Dropdown Menu */}
-                            {showUserMenu && (
-                                <>
-                                    <div
-                                        className="fixed inset-0 z-10"
-                                        onClick={() => setShowUserMenu(false)}
-                                    />
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-20">
-                                        <Link
-                                            to="/profile"
-                                            className="block px-4 py-2 hover:bg-gray-100 transition-colors"
-                                            onClick={() => setShowUserMenu(false)}
-                                        >
-                                            <FiUser className="inline mr-2" />
-                                            Profile
-                                        </Link>
-                                        <Link
-                                            to="/activity"
-                                            className="block px-4 py-2 hover:bg-gray-100 transition-colors"
-                                            onClick={() => setShowUserMenu(false)}
-                                        >
-                                            Activity
-                                        </Link>
-                                        <hr className="my-2" />
-                                        <button
-                                            onClick={handleLogout}
-                                            className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition-colors"
-                                        >
-                                            <FiLogOut className="inline mr-2" />
-                                            Logout
-                                        </button>
+                        {user ? (
+                            <div className="relative">
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setShowUserMenu(!showUserMenu)}
+                                    className="flex items-center gap-2 pl-4 border-l border-gray-200"
+                                >
+                                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                                        {getInitials(user.fullName)}
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                                    <span className="font-medium text-slate-700">{user.fullName.split(' ')[0]}</span>
+                                </motion.button>
+
+                                <AnimatePresence>
+                                    {showUserMenu && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden"
+                                        >
+                                            <Link to="/profile" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700">
+                                                <FiUser /> Profile
+                                            </Link>
+                                            <Link to="/saved-properties" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700">
+                                                <FiHeart /> Saved Homes
+                                            </Link>
+                                            <div className="h-px bg-gray-100 my-1"></div>
+                                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-red-500 font-medium">
+                                                <FiLogOut /> Logout
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <Link to="/login" className="font-medium text-slate-600 hover:text-primary-600">Log in</Link>
+                                <Link to="/signup" className="btn-primary-new">
+                                    Sign up
+                                </Link>
+                            </div>
+                        )}
+                    </nav>
 
                     {/* Mobile Menu Button */}
                     <button
-                        onClick={() => setShowMobileMenu(!showMobileMenu)}
-                        className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+                        className="md:hidden text-2xl text-slate-700"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
-                        {showMobileMenu ? <FiX size={24} /> : <FiMenu size={24} />}
+                        {mobileMenuOpen ? <FiX /> : <FiMenu />}
                     </button>
-                </div>
-
-                {/* Mobile Search */}
-                <div className="md:hidden pb-4">
-                    <form onSubmit={handleSearch}>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
-                            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        </div>
-                    </form>
                 </div>
             </div>
 
-            {/* Mobile Menu */}
-            {showMobileMenu && (
-                <div className="md:hidden bg-white border-t">
-                    <div className="px-4 py-2 space-y-2">
-                        <Link
-                            to="/dashboard"
-                            className="block px-4 py-2 rounded-lg hover:bg-gray-100"
-                            onClick={() => setShowMobileMenu(false)}
-                        >
-                            <FiHome className="inline mr-2" />
-                            Home
-                        </Link>
-                        <Link
-                            to="/saved-properties"
-                            className="block px-4 py-2 rounded-lg hover:bg-gray-100"
-                            onClick={() => setShowMobileMenu(false)}
-                        >
-                            <FiHeart className="inline mr-2" />
-                            Saved
-                        </Link>
-                        <Link
-                            to="/profile"
-                            className="block px-4 py-2 rounded-lg hover:bg-gray-100"
-                            onClick={() => setShowMobileMenu(false)}
-                        >
-                            <FiUser className="inline mr-2" />
-                            Profile
-                        </Link>
-                        <Link
-                            to="/activity"
-                            className="block px-4 py-2 rounded-lg hover:bg-gray-100"
-                            onClick={() => setShowMobileMenu(false)}
-                        >
-                            Activity
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            className="w-full text-left px-4 py-2 rounded-lg hover:bg-red-50 text-red-600"
-                        >
-                            <FiLogOut className="inline mr-2" />
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-white border-t border-gray-100 shadow-xl overflow-hidden"
+                    >
+                        <div className="flex flex-col p-4 gap-4">
+                            <Link to="/buy" className="p-2 font-medium text-slate-700">Buy Property</Link>
+                            <Link to="/sell" className="p-2 font-medium text-slate-700">Sell Property</Link>
+                            <Link to="/ai-predict" className="p-2 font-medium text-primary-600">AI Price Check</Link>
+                            <hr />
+                            {user ? (
+                                <>
+                                    <Link to="/profile" className="p-2 font-medium text-slate-700">My Profile</Link>
+                                    <button onClick={handleLogout} className="p-2 text-left font-medium text-red-500">Logout</button>
+                                </>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                    <Link to="/login" className="text-center py-2 rounded-lg border border-gray-200 font-medium">Log in</Link>
+                                    <Link to="/signup" className="text-center py-2 rounded-lg bg-primary-600 text-white font-medium">Sign up</Link>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </header>
     );
 };
